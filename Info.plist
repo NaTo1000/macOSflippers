@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    
+    <key>CFBundleExecutable</key>
+    <string>flipper-monitor-macos</string>
+    
+    <key>CFBundleIdentifier</key>
+    <string>com.yourcompany.flipper-monitor</string>
+    
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    
+    <key>CFBundleName</key>
+    <string>Flipper Monitor</string>
+    
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+    
+    <!-- Bluetooth Permissions -->
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>This app needs Bluetooth to communicate with your Flipper Zero device for system monitoring.</string>
+    
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>This app needs Bluetooth to communicate with your Flipper Zero device for system monitoring.</string>
+    
+    <!-- High Resolution Display Support -->
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    
+    <!-- App Category -->
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.utilities</string>
+    
+    <!-- Background Modes (if needed) -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>bluetooth-central</string>
+    </array>
+</dict>
+</plist>
