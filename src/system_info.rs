@@ -1,11 +1,11 @@
-// ======================== system_info.rs (macOS version) ========================
+// ======================== system_info.rs ========================
 
-use crate::helpers::{avg_vecu32, pop_4u8};
+use crate::helpers::pop_4u8;
 use serde::Serialize;
-use sysinfo::MemoryRefreshKind;
+use sysinfo::{System, MemoryRefreshKind};
 
 #[cfg(target_os = "macos")]
-mod gpu_info_macos;
+use crate::gpu_info_macos::GpuInfo;
 
 #[derive(Serialize, Debug, Clone)]
 pub struct SystemInfo {
@@ -42,22 +42,30 @@ impl SystemInfo {
         }
     }
 
-    pub async fn get_system_info(system_info: &mut sysinfo::System) -> Self {
+    pub async fn get_system_info(system: &mut System) -> Self {
         // Refresh system information
-        system_info.refresh_cpu_all();
-        system_info.refresh_memory_specifics(MemoryRefreshKind::everything());
+        system.refresh_cpu();
+        system.refresh_memory_specifics(MemoryRefreshKind::everything());
+        
+        // Give CPU time to calculate usage
+        tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
+        system.refresh_cpu();
 
         // Get CPU usage
-        let cpu_usage = system_info.global_cpu_usage() as u8;
+        let cpu_usage = system.global_cpu_info().cpu_usage() as u8;
 
         // Get RAM information
-        let ram_total = system_info.total_memory();
-        let ram_used = system_info.used_memory();
+        let ram_total = system.total_memory();
+        let ram_used = system.used_memory();
         let ram_exp = Self::get_exp(ram_total, 1024);
         let ram_divisor = u64::pow(1024, ram_exp);
         
         let ram_max = (ram_total / ram_divisor) as u16;
-        let ram_usage = ((ram_used as f64 / ram_total as f64) * 100.0) as u8;
+        let ram_usage = if ram_total > 0 {
+            ((ram_used as f64 / ram_total as f64) * 100.0) as u8
+        } else {
+            0
+        };
         let ram_unit = pop_4u8(Self::get_unit(ram_exp).as_bytes());
 
         // Get GPU information (platform-specific)
@@ -77,8 +85,6 @@ impl SystemInfo {
 
     #[cfg(target_os = "macos")]
     async fn get_gpu_stats() -> (u8, u16, u8, [u8; 4]) {
-        use gpu_info_macos::GpuInfo;
-
         if let Some(gpu_info) = GpuInfo::get_gpu_info().await {
             let vram_exp = Self::get_exp(gpu_info.vram_max, 1024);
             let vram_divisor = u64::pow(1024, vram_exp);
@@ -107,14 +113,8 @@ impl SystemInfo {
 
     #[cfg(not(target_os = "macos"))]
     async fn get_gpu_stats() -> (u8, u16, u8, [u8; 4]) {
-        // Placeholder for other platforms
+        // Placeholder for other platforms (Windows/Linux)
+        // TODO: Implement Windows NVML/nvidia-smi parsing
         (0, 0, 0, pop_4u8(b"GB"))
     }
-}
-
-#[derive(Serialize, Debug, Clone)]
-pub struct GpuInfo {
-    pub gpu_usage: u64,
-    pub vram_max: u64,
-    pub vram_used: u64,
 }
